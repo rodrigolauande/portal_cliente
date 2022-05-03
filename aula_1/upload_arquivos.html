@@ -1,0 +1,99 @@
+<html>
+    <head>
+        <title>Portal do Cliente</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            body {
+                background-color: rgb(230,230,230);
+            }
+
+        </style>
+    </head>
+    <body>
+
+        <form id="form-cliente">
+            <textarea name="comprovante"></textarea>
+            <input type="file" name="arquivo" />
+            <input type="submit" name="acao" value="enviar!" />
+        </form>
+
+        <script src="https://www.gstatic.com/firebasejs/8.4.3/firebase-app.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.4.3/firebase-auth.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.4.3/firebase-firestore.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.4.3/firebase-storage.js"></script>
+            
+            <script>
+                var firebaseConfig = {
+                    apiKey: "AIzaSyDx2MrmqCWfptRCpsfKGUDstbRFcRXIYDk",
+                    authDomain: "portal-cliente-d00ec.firebaseapp.com",
+                    projectId: "portal-cliente-d00ec",
+                    storageBucket: "portal-cliente-d00ec.appspot.com",
+                    messagingSenderId: "496555761946",
+                    appId: "1:496555761946:web:f1e5ad97aac29c72e14ca3"
+                };
+          
+                firebase.initializeApp(firebaseConfig);
+
+
+
+                const storage = firebase.storage();
+
+                const db = firebase.firestore();
+
+
+                const formCliente = document.querySelector('#form-cliente');
+
+
+                formCliente.addEventListener('submit',(e)=>{
+
+                    e.preventDefault();
+
+
+
+                    let comprovanteText = document.querySelector('[name=comprovante]').value;
+
+                    let arquivo = document.querySelector('[name=arquivo]').files[0];
+
+
+
+                    const uploadTask = storage.ref('documentos/'+arquivo.name).put(arquivo);
+
+
+
+                    uploadTask.on('state_changed',(snapshot)=>{
+
+                    const progress = (snapshot.bytesTransferred/snapshot.totalBytes) * 1;
+
+                    console.log(progress);
+
+                },
+
+                function(error){
+                },
+
+                function(){
+
+                    storage.ref('documentos/'+arquivo.name).getDownloadURL().then((url)=>{
+
+                        db.collection('documentos').add({
+
+                            descricao: comprovanteText,
+
+                            arquivoURL: url
+
+                        })
+
+                    })
+
+                }
+                )      
+                })
+
+            </script>
+    </body>
+</html>
+

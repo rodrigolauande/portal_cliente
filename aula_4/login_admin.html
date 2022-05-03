@@ -1,0 +1,203 @@
+<html>
+    <head>
+        <title>Portal do Cliente</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                background-color: #27282d;
+            }
+
+            .cliente{
+                max-width: 700px;
+                margin: 20px auto;;
+                width: 100%;
+                text-align: center;
+            }
+
+            .cliente img {
+                max-width: 500px;
+                width: 100%;
+            }
+
+            .cliente.h2 {
+                color: black;
+            }
+
+            .cliente form {
+                padding: 10px;
+            }
+
+            .cliente textarea {
+                width: 100%;
+                height: 120px;
+                padding: 10px;
+            }
+
+            .cliente input[type=file]{
+                margin: 10px 0;
+                border: 1px solid #ccc;
+                padding: 8px;
+            }
+
+            .cliente input[type=submit]{
+                width: 100%;
+                height: 50px;
+                display: block;
+                background-color: blueviolet;
+                color: white;
+                border: 0;
+                cursor: pointer;
+                font-size: 20px;
+            }
+
+            .admin img {
+                max-width: 100%;
+                border-radius: 10px;
+                margin-top: 110px;
+            }
+
+            .admin {
+                text-align: center;
+            }
+        </style>
+    </head>
+    <body>
+        <div style="display: none;" class="cliente">
+            <img src="aula_2/rodrigo.png">
+            <h2>Voce procura um Personal?</h2>
+            <form id="form-cliente">
+                <textarea placeholder="O que voce procura?..." name="comprovante"></textarea>
+                <input type="file" name="arquivo" />
+                <input type="submit" name="acao" value="enviar!" />
+            </form>
+        </div><!--cliente-->
+
+        <div style="display: none;" class="admin">
+            <a id="login" href="#"><img src="aula_2/signgoogle.png" /></a>
+            <div style="display:none"; class="listar-pedidos">
+                <h1 style="color:white">Ultimas solicitacoes</h1>
+            </div><!--listar-pedidos-->
+        </div><!--admin-->
+
+        <script src="https://www.gstatic.com/firebasejs/8.4.3/firebase-app.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.4.3/firebase-auth.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.4.3/firebase-firestore.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.4.3/firebase-storage.js"></script>
+            
+            <script>
+                var firebaseConfig = {
+                    apiKey: "AIzaSyDx2MrmqCWfptRCpsfKGUDstbRFcRXIYDk",
+                    authDomain: "portal-cliente-d00ec.firebaseapp.com",
+                    projectId: "portal-cliente-d00ec",
+                    storageBucket: "portal-cliente-d00ec.appspot.com",
+                    messagingSenderId: "496555761946",
+                    appId: "1:496555761946:web:f1e5ad97aac29c72e14ca3"
+                };
+          
+                firebase.initializeApp(firebaseConfig);
+
+
+
+                const storage = firebase.storage();
+
+                const db = firebase.firestore();
+
+                const auth = firebase.auth();
+
+                const provider = new firebase.auth.GoogleAuthProvider();
+
+
+                const formCliente = document.querySelector('#form-cliente');
+
+
+                formCliente.addEventListener('submit',(e)=>{
+
+                    e.preventDefault();
+
+
+
+                    let comprovanteText = document.querySelector('[name=comprovante]').value;
+
+                    let arquivo = document.querySelector('[name=arquivo]').files[0];
+
+
+
+                    const uploadTask = storage.ref('documentos/'+arquivo.name).put(arquivo);
+
+
+
+                    uploadTask.on('state_changed',(snapshot)=>{
+
+                    const progress = (snapshot.bytesTransferred/snapshot.totalBytes) * 1;
+
+                    console.log(progress);
+
+                },
+
+                function(error){
+                },
+
+                function(){
+
+                    storage.ref('documentos/'+arquivo.name).getDownloadURL().then((url)=>{
+
+                        db.collection('documentos').add({
+
+                            descricao: comprovanteText,
+
+                            arquivoURL: url
+
+                        })
+
+                    })
+
+                }
+                )      
+                })
+
+                const loginBtn = document.getElementById('login');
+                loginBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    
+                    //abrir pouup do google para fazer login
+                    auth.signInWithPopup(provider);
+                })
+
+                auth.onAuthStateChanged((val)=>{
+                    if(val){
+                        if(val.email == "guigo050226@gmail.com"){
+                            loginBtn.style.display = "none";
+                            alert('Loguei com admin!');
+                        }else{
+                            alert('Este e-mail nao e autorizado,');
+                        }
+                    }
+                })
+
+            </script>
+
+            <script>
+                //validacao de url
+
+                const urlParams = new URLSearchParams(window.location.search);
+                const myParam = urlParams.get('admin');
+
+                if(myParam != null){
+                    //Eu quero entrar na area administrativa
+                    const adminArea = document.querySelector('.admin');
+                    adminArea.style.display = "block";
+                    document.querySelector('.listar-pedidos').style.display="block";
+                }else{
+                    //Sou usuario
+                    const clienteArea = document.querySelector('.cliente');
+                    clienteArea.style.display = "block";
+                }
+            </script>
+    </body>
+</html>
+
